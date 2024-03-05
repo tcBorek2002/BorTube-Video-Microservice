@@ -1,4 +1,5 @@
 import express, { Express, Request, Response , Application } from 'express';
+import videosRouter from './routes/videosRouter';
 import dotenv from 'dotenv';
 
 //For env File 
@@ -10,6 +11,8 @@ const port = process.env.PORT || 8000;
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server');
 });
+
+app.use('/videos', videosRouter)
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
