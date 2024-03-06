@@ -1,11 +1,13 @@
 import express, { Express, Request, Response , Application } from 'express';
 import videosRouter from './routes/videosRouter';
 import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 
 //For env File 
 dotenv.config();
 
 const app: Application = express();
+app.use(bodyParser.json());
 const port = process.env.PORT || 8000;
 
 app.get('/', (req: Request, res: Response) => {
