@@ -2,16 +2,23 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-async function getAllVideos() {
-    const allVideos = await prisma.videos.findMany();
-    return allVideos;
+export async function getAllVideos() {
+    return await prisma.videos.findMany();
 }
 
-async function createVideo(title: string, duration: number ) {
+export async function getVideoById(id: number) {
+    return prisma.videos.findUnique({where: {id}});
+}
+
+export async function createVideo(title: string, duration: number ) {
     await prisma.videos.create({
         data: {
             title,
             duration
         }
     })
+}
+
+export async function updateVideo(id: number, title?: string, duration?: number) {
+    await prisma.videos.update({where: {id}, data: {title, duration}});
 }
