@@ -9,7 +9,7 @@ dotenv.config();
 const app: Application = express();
 app.use(bodyParser.json());
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:53097');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     next();
 })
 const port = process.env.PORT || 8000;
