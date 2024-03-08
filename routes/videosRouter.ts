@@ -1,5 +1,5 @@
 import express from 'express'
-import { createVideo, getAllVideos, getVideoById, updateVideo } from '../services/videosService'
+import { createVideo, deleteVideoById, getAllVideos, getVideoById, updateVideo } from '../services/videosService'
 const videosRouter = express.Router()
 
 videosRouter.get('/', (req, res) => {
@@ -67,4 +67,21 @@ videosRouter.post('/', (req, res) => {
       }
 })
 
+videosRouter.delete('/:id', (req, res) => {
+  try {
+    const videoId = Number(req.params.id);
+
+    // Check if the video ID is a valid number
+    if (isNaN(videoId)) {
+        res.status(400).send('Invalid video ID. Must be a number.');
+        return;
+    }
+
+    // Update the video in the database
+    deleteVideoById(videoId).then((deletedVideo) => res.status(200).json(deletedVideo));
+      } catch (error) {
+    console.error('Error deleting video:', error);
+    res.status(400).json({ error: error });
+  }
+})
 export default videosRouter;

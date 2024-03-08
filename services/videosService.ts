@@ -10,6 +10,10 @@ export async function getVideoById(id: number) {
     return prisma.videos.findUnique({where: {id}});
 }
 
+export async function deleteVideoById(id: number) {
+    return prisma.videos.delete({where: {id}});
+}
+
 export async function createVideo(title: string, duration: number ) {
     await prisma.videos.create({
         data: {
