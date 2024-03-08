@@ -11,7 +11,13 @@ export async function getVideoById(id: number) {
 }
 
 export async function deleteVideoById(id: number) {
-    return prisma.videos.delete({where: {id}});
+    try {
+        await prisma.videos.delete({where: {id}});
+        return true;
+    }
+    catch(error) {
+        return false;
+    }
 }
 
 export async function createVideo(title: string, duration: number ) {
