@@ -7,10 +7,11 @@ docker build . -t video-microservice
 docker run -p 8000:8000 --name bortube-video-microservice video-microservice
 
 Run db:
-
-docker run -d --name postgres-container -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=bortube-db -p 5432:5432 -v /path/on/host:/var/lib/postgresql/data postgres:latest
+docker-compose -f ./docker-compose-db.yml up -d
 
 connection string: postgres://myuser:mysecretpassword@localhost:5432/bortube-db
+DATABASE_URL="postgres://postgres.xtrezgfporrocooxhkue:PASSWORD@aws-0-eu-west-2.pooler.supabase.com:5432/postgres"
+Docker exec: psql -d bortube-db -U myuser
 
 CREATE TABLE videos (
 id SERIAL PRIMARY KEY,
