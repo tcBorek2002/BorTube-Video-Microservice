@@ -7,20 +7,20 @@ export async function getAllVideos() {
 }
 
 export async function getVideoById(id: number) {
-    return prisma.videos.findUnique({where: {id}});
+    return prisma.videos.findUnique({ where: { id } });
 }
 
 export async function deleteVideoById(id: number) {
     try {
-        await prisma.videos.delete({where: {id}});
+        await prisma.videos.delete({ where: { id } });
         return true;
     }
-    catch(error) {
+    catch (error) {
         return false;
     }
 }
 
-export async function createVideo(title: string, duration: number ) {
+export async function createVideo(title: string, duration: number) {
     await prisma.videos.create({
         data: {
             title,
@@ -30,5 +30,10 @@ export async function createVideo(title: string, duration: number ) {
 }
 
 export async function updateVideo(id: number, title?: string, duration?: number) {
-    await prisma.videos.update({where: {id}, data: {title, duration}});
+    try {
+        return await prisma.videos.update({ where: { id }, data: { title, duration } });
+    }
+    catch (error) {
+        return null;
+    }
 }

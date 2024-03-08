@@ -42,7 +42,12 @@ videosRouter.put('/:id', (req, res) => {
     }
 
     // Update the video in the database
-    updateVideo(videoId, title, duration).then((updatedVideo) => res.status(200).json(updatedVideo));
+    updateVideo(videoId, title, duration).then((updatedVideo) => {
+      if (updatedVideo != null) { res.status(200).json(updatedVideo) }
+      else {
+        res.status(404).send("Video not found");
+      }
+    });
   } catch (error) {
     console.error('Error updating video:', error);
     res.status(500).json({ error: 'Internal Server Error' });
