@@ -84,7 +84,6 @@ videosRouter.delete('/:id', (req, res) => {
 
     // Update the video in the database
     deleteVideoById(videoId).then((isDeleted) => {
-      console.log(isDeleted);
       if (isDeleted) { res.status(200).send(); }
       else { res.status(404).send("Video not found"); }
     });
