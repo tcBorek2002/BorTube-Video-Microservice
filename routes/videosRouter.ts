@@ -1,6 +1,14 @@
 import express from 'express'
 import { createVideo, deleteVideoById, getAllVideos, getVideoById, updateVideo } from '../services/videosService'
 const videosRouter = express.Router()
+import { BlobServiceClient } from '@azure/storage-blob';
+import multer from 'multer';
+import 'dotenv/config'
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+const azureStorageConnectionString = process.env.AZURESTORAGECONNECTIONSTRING;
+const containerName = 'bortube-container';
 
 videosRouter.get('/', (req, res) => {
   getAllVideos().then((videos) => res.send(videos));
@@ -71,6 +79,33 @@ videosRouter.post('/', (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 })
+
+
+// Upload the video
+videosRouter.post('/upload', upload.single('video'), async (req, res) => {
+  try {
+    const videoFile = req.file;
+    if (azureStorageConnectionString == undefined) {
+      res.status(500).send("Internal error #523B");
+      return;
+    }
+    const blobServiceClient = BlobServiceClient.fromConnectionString(azureStorageConnectionString);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    if (videoFile == undefined) {
+      res.status(400).send("No file was sent or misformed file was sent.");
+      return;
+    }
+    const blobName = videoFile.originalname;
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.upload(videoFile.buffer, videoFile.size);
+
+    res.status(200).send('Video uploaded successfully');
+  } catch (error) {
+    console.error('Error uploading video:', error);
+    res.status(500).send('Error uploading video');
+  }
+});
 
 videosRouter.delete('/:id', (req, res) => {
   try {
