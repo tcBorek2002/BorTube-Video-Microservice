@@ -7,8 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model videos {
+model Video {
+  id          Int        @id @default(autoincrement())
+  title       String     @db.VarChar(100)
+  description String
+  videoState  VideoState
+  videoFile   VideoFile? @relation(fields: [videoFileId], references: [id])
+  videoFileId Int?       @unique
+}
+
+model VideoFile {
   id       Int    @id @default(autoincrement())
-  title    String @db.VarChar(100)
   duration Int
+  videoUrl String
+  video    Video?
+}
+
+enum VideoState {
+  UPLOADING
+  HIDDEN
+  VISIBLE
 }
