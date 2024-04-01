@@ -1,26 +1,20 @@
-import { PrismaClient } from '@prisma/client'
-import multer from 'multer';
-import { BlobServiceClient } from '@azure/storage-blob';
+import { PrismaClient, VideoState } from '@prisma/client'
 import 'dotenv/config'
 
 const prisma = new PrismaClient()
 
-const upload = multer({ storage: multer.memoryStorage() });
-
-const azureStorageConnectionString = process.env.AZURESTORAGECONNECTIONSTRING;
-const containerName = 'bortube-container';
 
 export async function getAllVideos() {
-    return await prisma.videos.findMany();
+    return await prisma.video.findMany({ include: { videoFile: true } });
 }
 
 export async function getVideoById(id: number) {
-    return prisma.videos.findUnique({ where: { id } });
+    return prisma.video.findUnique({ where: { id }, include: { videoFile: true } });
 }
 
 export async function deleteVideoById(id: number) {
     try {
-        await prisma.videos.delete({ where: { id } });
+        await prisma.video.delete({ where: { id } });
         return true;
     }
     catch (error) {
@@ -28,38 +22,21 @@ export async function deleteVideoById(id: number) {
     }
 }
 
-export async function createVideo(title: string, duration: number) {
-    await prisma.videos.create({
+export async function createVideo(title: string, description: string) {
+    return await prisma.video.create({
         data: {
             title,
-            duration
+            description,
+            videoState: VideoState.UPLOADING,
         }
     })
 }
 
-export async function updateVideo(id: number, title?: string, duration?: number) {
+export async function updateVideo({ id, title, description, videoState }: { id: number; title?: string; description?: string; videoState?: VideoState }) {
     try {
-        return await prisma.videos.update({ where: { id }, data: { title, duration } });
+        return await prisma.video.update({ where: { id }, data: { title, description, videoState } });
     }
     catch (error) {
         return null;
-    }
-}
-
-export async function uploadVideo(videoFile: Express.Multer.File) {
-    if (azureStorageConnectionString == undefined) {
-        return false;
-    }
-    const blobName = videoFile.originalname;
-
-    const blobServiceClient = BlobServiceClient.fromConnectionString(azureStorageConnectionString);
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-    try {
-        await blockBlobClient.upload(videoFile.buffer, videoFile.size);
-        return true;
-    } catch (error) {
-        console.error("Error uploading video:", error);
-        return false;
     }
 }
