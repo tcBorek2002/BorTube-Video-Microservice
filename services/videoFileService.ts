@@ -4,6 +4,7 @@ import { BlobServiceClient } from '@azure/storage-blob';
 import 'dotenv/config'
 import { getVideoDurationInSeconds } from 'get-video-duration';
 import { updateVideo } from './videosService';
+import { Readable } from 'stream';
 
 const prisma = new PrismaClient()
 
@@ -46,13 +47,15 @@ export async function uploadVideo(videoFile: Express.Multer.File, videoId: numbe
     }
     const blobName = videoId + "_" + videoFile.originalname;
     const videoUrl = "https://storagebortube.blob.core.windows.net/bortube-container/" + blobName;
-    // const durationSeconds = await getVideoDurationInSeconds(videoFile.stream);
-    const durationSeconds = 100;
+    // const durationSeconds = 100;
 
     const blobServiceClient = BlobServiceClient.fromConnectionString(azureStorageConnectionString);
     const containerClient = blobServiceClient.getContainerClient(containerName);
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
     try {
+        console.log(videoFile);
+        const stream = Readable.from(videoFile.buffer);
+        const durationSeconds = await getVideoDurationInSeconds(stream);
         await blockBlobClient.upload(videoFile.buffer, videoFile.size);
         await createVideoFile(durationSeconds, videoUrl, videoId);
         await updateVideo({ id: videoId, videoState: VideoState.VISIBLE });
