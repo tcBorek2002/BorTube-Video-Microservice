@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 
 export async function getAllVideos() {
-    return await prisma.video.findMany({ include: { videoFile: true } });
+    return await prisma.video.findMany({ where: { videoState: VideoState.VISIBLE }, include: { videoFile: true } });
 }
 
 export async function getVideoById(id: number) {
