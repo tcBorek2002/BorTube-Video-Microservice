@@ -1,5 +1,6 @@
 import { PrismaClient, VideoState } from '@prisma/client'
 import 'dotenv/config'
+import { deleteVideoFileById } from './videoFileService';
 
 const prisma = new PrismaClient()
 
@@ -14,6 +15,10 @@ export async function getVideoById(id: number) {
 
 export async function deleteVideoById(id: number) {
     try {
+        let video = await getVideoById(id);
+        if (video?.videoFileId) {
+            await deleteVideoFileById(video?.videoFileId);
+        }
         await prisma.video.delete({ where: { id } });
         return true;
     }

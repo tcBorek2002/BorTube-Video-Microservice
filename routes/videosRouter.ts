@@ -1,7 +1,7 @@
 import express from 'express'
 import { createVideo, deleteVideoById, getAllVideos, getVideoById, updateVideo } from '../services/videosService'
 import multer from 'multer';
-import { createVideoFile, uploadVideo } from '../services/videoFileService';
+import { createVideoFile, deleteVideoCloud, uploadVideo } from '../services/videoFileService';
 const videosRouter = express.Router()
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -103,6 +103,28 @@ videosRouter.post('/', upload.single('video'), async (req, res) => {
 //     res.status(500).send('Error uploading video');
 //   }
 // });
+
+videosRouter.delete('/test', (req, res) => {
+  try {
+    const videoUrl = req.body.url;
+
+    // Check if the video ID is a valid number
+    if (typeof videoUrl !== 'string') {
+      res.status(400).send('Invalid videoURL.');
+      return;
+    }
+
+    // Update the video in the database
+    deleteVideoCloud(videoUrl).then((isDeleted) => {
+      if (isDeleted) { res.status(200).send(); }
+      else { res.status(404).send("Video not found"); }
+    });
+  } catch (error) {
+    console.error('Error deleting video:', error);
+    res.status(500).json({ error: error });
+  }
+})
+
 
 videosRouter.delete('/:id', (req, res) => {
   try {
