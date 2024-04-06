@@ -104,28 +104,6 @@ videosRouter.post('/', upload.single('video'), async (req, res) => {
 //   }
 // });
 
-videosRouter.delete('/test', (req, res) => {
-  try {
-    const videoUrl = req.body.url;
-
-    // Check if the video ID is a valid number
-    if (typeof videoUrl !== 'string') {
-      res.status(400).send('Invalid videoURL.');
-      return;
-    }
-
-    // Update the video in the database
-    deleteVideoCloud(videoUrl).then((isDeleted) => {
-      if (isDeleted) { res.status(200).send(); }
-      else { res.status(404).send("Video not found"); }
-    });
-  } catch (error) {
-    console.error('Error deleting video:', error);
-    res.status(500).json({ error: error });
-  }
-})
-
-
 videosRouter.delete('/:id', (req, res) => {
   try {
     const videoId = Number(req.params.id);
