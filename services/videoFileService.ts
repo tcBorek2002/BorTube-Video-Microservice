@@ -5,6 +5,7 @@ import 'dotenv/config'
 import { getVideoDurationInSeconds } from 'get-video-duration';
 import { updateVideo } from './videosService';
 import { Readable } from 'stream';
+import { Storage } from '@google-cloud/storage';
 
 const prisma = new PrismaClient()
 
@@ -84,6 +85,44 @@ export async function uploadVideo(videoFile: Express.Multer.File, videoId: numbe
         await blockBlobClient.upload(videoFile.buffer, videoFile.size);
         await createVideoFile(durationSeconds, videoUrl, videoId);
         await updateVideo({ id: videoId, videoState: VideoState.VISIBLE });
+        return true;
+    } catch (error) {
+        console.error("Error uploading video:", error);
+        return false;
+    }
+}
+
+export async function uploadVideoGoogleCloud(videoFile: Express.Multer.File, videoId: number) {
+    if (azureStorageConnectionString == undefined) {
+        return false;
+    }
+
+    const storage = new Storage({ projectId: 'theta-grid-417116', keyFilename: 'assets\\gcp-key.json' });
+    const blobName = videoId + "_" + videoFile.originalname;
+
+    try {
+        await storage.bucket('bortube_bucket').file(blobName).save(videoFile.buffer);
+        return true;
+    } catch (error) {
+        console.error("Error uploading video:", error);
+        return false;
+    }
+}
+
+
+export async function deleteVideoGoogleCloud(videoUrl: string) {
+    if (azureStorageConnectionString == undefined) {
+        return false;
+    }
+
+    const storage = new Storage({ projectId: 'theta-grid-417116', keyFilename: 'assets\gcp-key.json' });
+    const blobName = extractFileNameFromURL(videoUrl);
+    if (!blobName) {
+        return false;
+    }
+
+    try {
+        await storage.bucket('bortube_bucket').file(blobName).delete();
         return true;
     } catch (error) {
         console.error("Error uploading video:", error);
