@@ -115,7 +115,7 @@ export async function deleteVideoGoogleCloud(videoUrl: string) {
         return false;
     }
 
-    const storage = new Storage({ projectId: 'theta-grid-417116', keyFilename: 'assets\gcp-key.json' });
+    const storage = new Storage({ projectId: 'theta-grid-417116', keyFilename: 'assets\\gcp-key.json' });
     const blobName = extractFileNameFromURL(videoUrl);
     if (!blobName) {
         return false;
