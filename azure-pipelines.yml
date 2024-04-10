@@ -19,6 +19,7 @@ variables:
 
 stages:
 - stage: Test
+  pool: Default
   displayName: Test code
   jobs:
     - job: TestJob
@@ -32,6 +33,7 @@ stages:
           publishLocation: 'pipeline'
 
 - stage: Verify
+  pool: Default
   displayName: Verify code
   jobs:
     - job: SonarQube
