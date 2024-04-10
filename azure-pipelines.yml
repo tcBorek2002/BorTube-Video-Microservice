@@ -5,12 +5,32 @@ resources:
 - repo: self
 
 stages:
+- stage: Test
+  displayName: Test code
+  jobs:
+    - job: TestJob
+      steps:
+      - script: npm test
+        displayName: 'Run Tests and Generate Coverage'
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: $(System.DefaultWorkingDirectory)/coverage
+          artifact: 'coverage'
+          publishLocation: 'pipeline'
+
 - stage: Verify
   displayName: Verify code
   jobs:
     - job: SonarQube
       displayName: SonarQube
       steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            buildType: 'specific'
+            project: '$(System.TeamProjectId)'
+            definition: 'YourPipelineDefinitionId'
+            artifactName: 'coverage'
+            targetPath: '$(System.DefaultWorkingDirectory)/coverage'
         - task: SonarQubePrepare@5
           inputs:
             SonarQube: 'SonarQube-Eindhoven'
