@@ -1,5 +1,8 @@
 # BorTube Video Microservice
 
+Run local sonarqube analysis:
+sonar-scanner.bat -D"sonar.projectKey=Video-MicroService-Local" -D"sonar.sources=." -D"sonar.host.url=http://217.105.22.226:9000" -D"sonar.token=sqp_079eb5d66138b8ea5558f6182b98aa0ef959cd4c"
+
 npm run dev for development. Runs on localhost:8000
 
 Docker deploying:  
