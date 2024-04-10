@@ -28,7 +28,7 @@ stages:
           inputs:
             buildType: 'specific'
             project: '$(System.TeamProjectId)'
-            definition: 'YourPipelineDefinitionId'
+            definition: '1'
             artifactName: 'coverage'
             targetPath: '$(System.DefaultWorkingDirectory)/coverage'
         - task: SonarQubePrepare@5
