@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, Application } from 'express';
+import express, { Request, Response, Application } from 'express';
 import videosRouter from './routes/videosRouter';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
