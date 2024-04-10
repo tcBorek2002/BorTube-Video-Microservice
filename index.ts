@@ -1,4 +1,4 @@
-import express, { Express, Request, Response , Application } from 'express';
+import express, { Express, Request, Response, Application } from 'express';
 import videosRouter from './routes/videosRouter';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
@@ -9,11 +9,12 @@ dotenv.config();
 const app: Application = express();
 app.use(bodyParser.json());
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    next();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  next();
 })
+app.disable("x-powered-by");
 const port = process.env.PORT || 8000;
 
 app.get('/', (req: Request, res: Response) => {
