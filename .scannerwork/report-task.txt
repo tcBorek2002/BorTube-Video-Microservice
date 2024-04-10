@@ -1,0 +1,6 @@
+projectKey=Video-MicroService-Local
+serverUrl=http://217.105.22.226:9000
+serverVersion=10.4.1.88267
+dashboardUrl=http://217.105.22.226:9000/dashboard?id=Video-MicroService-Local
+ceTaskId=f189f59d-811d-43f8-a3c4-e88813a6b1b1
+ceTaskUrl=http://217.105.22.226:9000/api/ce/task?id=f189f59d-811d-43f8-a3c4-e88813a6b1b1
