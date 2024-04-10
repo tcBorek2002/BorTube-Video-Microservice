@@ -59,7 +59,7 @@ export async function deleteVideoCloud(videoUrl: string) {
     if (!blobName) {
         return false;
     }
-    const blockBlobClient = await containerClient.getBlockBlobClient(blobName);
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
     try {
         await blockBlobClient.deleteIfExists(options);
