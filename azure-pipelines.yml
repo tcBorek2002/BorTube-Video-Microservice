@@ -24,6 +24,8 @@ stages:
   jobs:
     - job: TestJob
       steps:
+      - script: npm install
+        displayName: 'Install packages'
       - script: npm test
         displayName: 'Run Tests and Generate Coverage'
       - task: PublishPipelineArtifact@1
