@@ -129,7 +129,7 @@ export async function deleteVideoGoogleCloud(videoUrl: string) {
     }
 }
 
-function extractFileNameFromURL(url: string): string | null {
+export function extractFileNameFromURL(url: string): string | null {
     const lastSlashIndex = url.lastIndexOf('/');
     if (lastSlashIndex !== -1) {
         return url.substring(lastSlashIndex + 1);
