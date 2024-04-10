@@ -1,7 +1,7 @@
 import express from 'express'
 import { createVideo, deleteVideoById, getAllVideos, getVideoById, updateVideo } from '../services/videosService'
 import multer from 'multer';
-import { createVideoFile, deleteVideoCloud, uploadVideo } from '../services/videoFileService';
+import { uploadVideo } from '../services/videoFileService';
 const videosRouter = express.Router()
 const upload = multer({ storage: multer.memoryStorage() });
 
