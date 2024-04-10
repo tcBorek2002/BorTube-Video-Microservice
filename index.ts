@@ -15,7 +15,7 @@ app.use((req, res, next) => {
   next();
 })
 app.disable("x-powered-by");
-const port = process.env.PORT || 8000;
+const port = process.env.PORT ?? 8000;
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server');
