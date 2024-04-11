@@ -19,7 +19,6 @@ variables:
 
 stages:
 - stage: Test
-  pool: Default
   displayName: Test code
   jobs:
     - job: Test_and_SonarQube
@@ -58,7 +57,6 @@ stages:
           pollingTimeoutSec: '300'
 
 # - stage: Verify
-#   pool: Default
 #   displayName: Verify code
 #   jobs:
     
