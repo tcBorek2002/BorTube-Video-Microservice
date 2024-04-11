@@ -28,26 +28,21 @@ stages:
         displayName: 'Install packages'
       - script: npm test
         displayName: 'Run Tests and Generate Coverage'
-      - task: PublishPipelineArtifact@1
-        inputs:
-          targetPath: $(System.DefaultWorkingDirectory)/coverage
-          artifact: 'coverage'
-          publishLocation: 'pipeline'
-
-- stage: Verify
-  pool: Default
-  displayName: Verify code
-  jobs:
+      # - task: PublishPipelineArtifact@1
+      #   inputs:
+      #     targetPath: $(System.DefaultWorkingDirectory)/coverage
+      #     artifact: 'coverage'
+      #     publishLocation: 'pipeline'
     - job: SonarQube
       displayName: SonarQube
       steps:
-        - task: DownloadPipelineArtifact@2
-          inputs:
-            buildType: 'specific'
-            project: '$(System.TeamProjectId)'
-            definition: '1'
-            artifactName: 'coverage'
-            targetPath: '$(System.DefaultWorkingDirectory)/coverage'
+        # - task: DownloadPipelineArtifact@2
+        #   inputs:
+        #     buildType: 'specific'
+        #     project: '$(System.TeamProjectId)'
+        #     definition: '1'
+        #     artifactName: 'coverage'
+        #     targetPath: '$(System.DefaultWorkingDirectory)/coverage'
         - task: SonarQubePrepare@5
           inputs:
             SonarQube: 'SonarQube-Eindhoven'
@@ -59,6 +54,12 @@ stages:
         - task: SonarQubePublish@5
           inputs:
             pollingTimeoutSec: '300'
+
+# - stage: Verify
+#   pool: Default
+#   displayName: Verify code
+#   jobs:
+    
             
 - stage: Build
   displayName: Build stage
