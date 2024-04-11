@@ -5,8 +5,8 @@ import { getVideoDurationInSeconds } from 'get-video-duration';
 import { updateVideo } from './videosService';
 import { Readable } from 'stream';
 import { Storage } from '@google-cloud/storage';
+import prisma from '../client';
 
-const prisma = new PrismaClient()
 
 const azureStorageConnectionString = process.env.AZURESTORAGECONNECTIONSTRING;
 const containerName = 'bortube-container';
