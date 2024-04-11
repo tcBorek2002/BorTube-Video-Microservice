@@ -48,6 +48,10 @@ stages:
             SonarQube: 'SonarQube-Eindhoven'
             scannerMode: 'CLI'
             configMode: 'file' 
+        - powershell: |
+            $params = "$env:SONARQUBE_SCANNER_PARAMS" -replace '"sonar.branch.name":"[\w,/,-]*"\,?'
+            Write-Host "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$params"
+          displayName: Filter out SonarQube scanner params
         - task: SonarQubeAnalyze@5
           inputs:
             jdkversion: 'JAVA_HOME_17_X64'
