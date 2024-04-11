@@ -22,7 +22,8 @@ stages:
   pool: Default
   displayName: Test code
   jobs:
-    - job: TestJob
+    - job: Test_and_SonarQube
+      displayName: Test code and run SonarQube analysis
       steps:
       - script: npm install
         displayName: 'Install packages'
@@ -33,9 +34,6 @@ stages:
       #     targetPath: $(System.DefaultWorkingDirectory)/coverage
       #     artifact: 'coverage'
       #     publishLocation: 'pipeline'
-    - job: SonarQube
-      displayName: SonarQube
-      steps:
         # - task: DownloadPipelineArtifact@2
         #   inputs:
         #     buildType: 'specific'
@@ -43,21 +41,21 @@ stages:
         #     definition: '1'
         #     artifactName: 'coverage'
         #     targetPath: '$(System.DefaultWorkingDirectory)/coverage'
-        - task: SonarQubePrepare@5
-          inputs:
-            SonarQube: 'SonarQube-Eindhoven'
-            scannerMode: 'CLI'
-            configMode: 'file' 
-        - powershell: |
-            $params = "$env:SONARQUBE_SCANNER_PARAMS" -replace '"sonar.branch.name":"[\w,/,-]*"\,?'
-            Write-Host "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$params"
-          displayName: Filter out SonarQube scanner params
-        - task: SonarQubeAnalyze@5
-          inputs:
-            jdkversion: 'JAVA_HOME_17_X64'
-        - task: SonarQubePublish@5
-          inputs:
-            pollingTimeoutSec: '300'
+      - task: SonarQubePrepare@5
+        inputs:
+          SonarQube: 'SonarQube-Eindhoven'
+          scannerMode: 'CLI'
+          configMode: 'file' 
+      - powershell: |
+          $params = "$env:SONARQUBE_SCANNER_PARAMS" -replace '"sonar.branch.name":"[\w,/,-]*"\,?'
+          Write-Host "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$params"
+        displayName: Filter out SonarQube scanner params
+      - task: SonarQubeAnalyze@5
+        inputs:
+          jdkversion: 'JAVA_HOME_17_X64'
+      - task: SonarQubePublish@5
+        inputs:
+          pollingTimeoutSec: '300'
 
 # - stage: Verify
 #   pool: Default
