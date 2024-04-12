@@ -52,7 +52,7 @@ videosRouter.put('/:id', (req, res) => {
   }
 })
 
-videosRouter.post('/', upload.single('video'), async (req, res) => {
+videosRouter.post('/', upload.single('video'), (req, res) => {
   try {
     if (req.body == null) { return res.status(400).json({ error: 'Title and duration are required' }); }
     const videoFile = req.file;
@@ -69,14 +69,17 @@ videosRouter.post('/', upload.single('video'), async (req, res) => {
     }
 
     // Create the video in the database
-    let newVideo = await createVideo(title, description);
-    let uploadSuccess = await uploadVideo(videoFile, newVideo.id);
-    if (!uploadSuccess) {
-      await deleteVideoById(newVideo.id);
-      return res.status(500).send("Something went wrong when uploading the video. Please try again later.");
-    }
+    createVideo(title, description).then((video) => {
+      uploadVideo(videoFile, video.id).then((success) => {
+        if (!success) {
+          deleteVideoById(video.id).then(() => {
+            return res.status(500).send("Something went wrong when uploading the video. Please try again later.");
+          });
+        }
+        return res.status(201).json({ videoId: video.id });
+      });
+    });
 
-    return res.status(201).json({ videoId: newVideo.id });
 
   } catch (error) {
     console.error('Error creating video:', error);
