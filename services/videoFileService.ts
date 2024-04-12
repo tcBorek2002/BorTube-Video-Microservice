@@ -1,4 +1,4 @@
-import { PrismaClient, VideoState } from '@prisma/client'
+import { VideoState } from '@prisma/client'
 import { BlobDeleteOptions, BlobServiceClient } from '@azure/storage-blob';
 import 'dotenv/config'
 import { getVideoDurationInSeconds } from 'get-video-duration';
