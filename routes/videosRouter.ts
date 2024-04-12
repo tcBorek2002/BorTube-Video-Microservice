@@ -80,7 +80,7 @@ videosRouter.post('/', upload.single('video'), async (req, res) => {
 
   } catch (error) {
     console.error('Error creating video:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 })
 
