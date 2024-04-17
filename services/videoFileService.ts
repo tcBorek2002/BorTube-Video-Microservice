@@ -2,10 +2,11 @@ import { VideoState } from '@prisma/client'
 import { BlobDeleteOptions, BlobServiceClient } from '@azure/storage-blob';
 import 'dotenv/config'
 import { getVideoDurationInSeconds } from 'get-video-duration';
-import { updateVideo } from './videosService';
 import { Readable } from 'stream';
 import { Storage } from '@google-cloud/storage';
 import prisma from '../client';
+import { VideoService } from './implementations/VideoService';
+import { PrismaVideoRepository } from '../repositories/implementations/PrismaVideoRepository';
 
 
 const azureStorageConnectionString = process.env.AZURESTORAGECONNECTIONSTRING;
@@ -69,6 +70,7 @@ export async function deleteVideoCloud(videoUrl: string) {
 }
 
 export async function uploadVideo(videoFile: Express.Multer.File, videoId: number) {
+    let videoService = new VideoService(new PrismaVideoRepository());
     if (azureStorageConnectionString == undefined) {
         return false;
     }
@@ -83,7 +85,7 @@ export async function uploadVideo(videoFile: Express.Multer.File, videoId: numbe
         const durationSeconds = await getVideoDurationInSeconds(stream);
         await blockBlobClient.upload(videoFile.buffer, videoFile.size);
         await createVideoFile(durationSeconds, videoUrl, videoId);
-        await updateVideo({ id: videoId, videoState: VideoState.VISIBLE });
+        await videoService.updateVideo({ id: videoId, videoState: VideoState.VISIBLE });
         return true;
     } catch (error) {
         console.error("Error uploading video:", error);
