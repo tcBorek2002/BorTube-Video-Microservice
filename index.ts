@@ -6,6 +6,8 @@ import { VideoService } from './services/implementations/VideoService';
 import { PrismaVideoRepository } from './repositories/implementations/PrismaVideoRepository';
 import swaggerUi from 'swagger-ui-express';
 import morgan from 'morgan';
+import Connection from 'rabbitmq-client';
+import { VideoRouterRabbit } from './routes/VideoRouterRabbit';
 
 //For env File 
 dotenv.config();
@@ -43,3 +45,17 @@ app.use(videoRouter);
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
+// RabbitMQ connection
+const userName = "NodeUser";
+const password = process.env.RABBITMQ_PASSWORD;
+const rabbit = new Connection(`amqp://${userName}:${password}@217.105.22.226`);
+
+rabbit.on('error', (err) => {
+  console.log('RabbitMQ connection error', err)
+})
+rabbit.on('connection', () => {
+  console.log('Connection successfully (re)established')
+})
+const videoRouterRabbit = new VideoRouterRabbit(rabbit);
+videoRouterRabbit.start();
