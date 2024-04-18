@@ -6,7 +6,7 @@ import { VideoService } from './services/implementations/VideoService';
 import { PrismaVideoRepository } from './repositories/implementations/PrismaVideoRepository';
 import swaggerUi from 'swagger-ui-express';
 import morgan from 'morgan';
-import Connection from 'rabbitmq-client';
+import Connection, { ConnectionOptions } from 'rabbitmq-client';
 import { VideoRouterRabbit } from './routes/VideoRouterRabbit';
 
 //For env File 
@@ -49,7 +49,8 @@ app.listen(port, () => {
 // RabbitMQ connection
 const userName = "NodeUser";
 const password = process.env.RABBITMQ_PASSWORD;
-const rabbit = new Connection(`amqp://${userName}:${password}@217.105.22.226`);
+const options: ConnectionOptions = { username: userName, password: password, connectionName: 'Video Microservice', hostname: "217.105.22.226" };
+const rabbit = new Connection(options);
 
 rabbit.on('error', (err) => {
   console.log('RabbitMQ connection error', err)
@@ -57,5 +58,5 @@ rabbit.on('error', (err) => {
 rabbit.on('connection', () => {
   console.log('Connection successfully (re)established')
 })
-const videoRouterRabbit = new VideoRouterRabbit(rabbit);
+const videoRouterRabbit = new VideoRouterRabbit(rabbit, new VideoService(new PrismaVideoRepository()));
 videoRouterRabbit.start();
