@@ -17,6 +17,17 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Get all videos request:', req.body);
+                const videos = await this.videoService.getAllVideos();
+                reply(videos);
+            }
+        );
+
+        const getAllVisibleVideosServer = this.rabbit.createConsumer(
+            {
+                queue: 'get-all-visible-videos',
+            },
+            async (req, reply) => {
+                console.log('Get all visible videos request:', req.body);
                 const videos = await this.videoService.getAllVisibleVideos();
                 reply(videos);
             }
@@ -55,6 +66,7 @@ export class VideoRouterRabbit {
         process.on('SIGINT', async () => {
             await Promise.all([
                 getAllVideosServer.close(),
+                getAllVisibleVideosServer.close(),
                 createVideoServer.close(),
                 updateVideoServer.close(),
                 deleteVideoServer.close(),
