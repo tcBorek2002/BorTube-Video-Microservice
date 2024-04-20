@@ -33,6 +33,22 @@ export class VideoRouterRabbit {
             }
         );
 
+        const getVideoByIdServer = this.rabbit.createConsumer(
+            {
+                queue: 'get-video-by-id',
+            },
+            async (req, reply) => {
+                console.log('Get video by id:', req.body);
+                let videoId = parseInt(req.body);
+                if (isNaN(videoId)) {
+                    reply('Invalid video ID. Must be a number.');
+                    return;
+                }
+                const video = await this.videoService.getVideoById(videoId);
+                reply(video);
+            }
+        );
+
         const createVideoServer = this.rabbit.createConsumer(
             {
                 queue: 'create-video',
@@ -67,6 +83,7 @@ export class VideoRouterRabbit {
             await Promise.all([
                 getAllVideosServer.close(),
                 getAllVisibleVideosServer.close(),
+                getVideoByIdServer.close(),
                 createVideoServer.close(),
                 updateVideoServer.close(),
                 deleteVideoServer.close(),
