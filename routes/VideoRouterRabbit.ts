@@ -38,13 +38,13 @@ export class VideoRouterRabbit {
                 queue: 'get-video-by-id',
             },
             async (req, reply) => {
-                console.log('Get video by id:', req.body);
-                let videoId = parseInt(req.body);
+                console.log('Get video by id:', req.body.id);
+                let videoId = parseInt(req.body.id);
                 if (isNaN(videoId)) {
-                    reply('Invalid video ID. Must be a number.');
+                    reply({ error: 'Invalid video ID. Must be a number.' });
                     return;
                 }
-                const video = await this.videoService.getVideoById(videoId);
+                const video = await this.videoService.deleteVideoByID(videoId);
                 reply(video);
             }
         );
@@ -55,7 +55,27 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Create video request:', req.body);
-                await reply('Video created');
+
+                try {
+                    if (req.body == null) { return await reply({ error: 'Title and duration are required' }); }
+                    // const videoFile = req.file;
+
+                    // if (videoFile == undefined) {
+                    //     res.status(400).send("No file was sent or misformed file was sent.");
+                    //     return;
+                    // }
+                    const { title, description } = req.body;
+                    if (!title || !description) {
+                        await reply({ error: 'Title and description are required' });
+                        return;
+                    }
+
+                    this.videoService.createVideo(title, description).then(async (video) => {
+                        await reply(video);
+                    });
+                } catch (error) {
+                    await reply({ error: 'Internal Server Error' });
+                }
             }
         );
 
@@ -75,7 +95,22 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Delete video request:', req.body);
-                await reply('Video deleted');
+                const videoId = parseInt(req.body.id);
+
+                // Check if the video ID is a valid number
+                if (isNaN(videoId)) {
+                    reply({ error: 'Invalid video ID. Must be a number.' });
+                    return;
+                }
+
+                this.videoService.deleteVideoByID(videoId).then(async (deleted) => {
+                    if (deleted) {
+                        await reply(deleted);
+                    }
+                    else {
+                        await reply({ error: "Video not found." });
+                    }
+                });
             }
         );
 
