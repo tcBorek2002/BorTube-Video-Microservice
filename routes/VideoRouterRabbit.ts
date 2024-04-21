@@ -22,7 +22,7 @@ export class VideoRouterRabbit {
             async (req, reply) => {
                 console.log('Get all videos request:', req.body);
                 const videos = await this.videoService.getAllVideos();
-                reply(videos);
+                reply(new ResponseDto<Video[]>(true, videos));
             }
         );
 
@@ -33,7 +33,7 @@ export class VideoRouterRabbit {
             async (req, reply) => {
                 console.log('Get all visible videos request:', req.body);
                 const videos = await this.videoService.getAllVisibleVideos();
-                reply(videos);
+                reply(new ResponseDto<Video[]>(true, videos));
             }
         );
 
