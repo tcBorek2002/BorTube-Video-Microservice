@@ -1,5 +1,9 @@
 import { Connection } from 'rabbitmq-client';
 import { IVideoService } from '../services/IVideoService';
+import { ErrorDto } from '../dtos/ErrorDto';
+import { NotFoundError } from '../errors/NotFoundError';
+import { Video } from '@prisma/client';
+import { ResponseDto } from '../dtos/ResponseDto';
 
 export class VideoRouterRabbit {
     private rabbit: Connection;
@@ -41,11 +45,17 @@ export class VideoRouterRabbit {
                 console.log('Get video by id:', req.body.id);
                 let videoId = parseInt(req.body.id);
                 if (isNaN(videoId)) {
-                    reply({ error: 'Invalid video ID. Must be a number.' });
+                    reply(new ResponseDto(false, new ErrorDto(400, 'InputError', 'Invalid video ID. Must be a number.')));
                     return;
                 }
-                const video = await this.videoService.deleteVideoByID(videoId);
-                reply(video);
+                try {
+                    const video = await this.videoService.getVideoById(videoId);
+                    reply(new ResponseDto<Video>(true, video));
+                } catch (error) {
+                    if (error instanceof NotFoundError) {
+                        reply(new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
+                    }
+                }
             }
         );
 
