@@ -67,7 +67,9 @@ export class VideoRouterRabbit {
                 console.log('Create video request:', req.body);
 
                 try {
-                    if (req.body == null) { return await reply({ error: 'Title and duration are required' }); }
+                    if (req.body == null) {
+                        return await reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
+                    }
                     // const videoFile = req.file;
 
                     // if (videoFile == undefined) {
@@ -76,15 +78,14 @@ export class VideoRouterRabbit {
                     // }
                     const { title, description } = req.body;
                     if (!title || !description) {
-                        await reply({ error: 'Title and description are required' });
-                        return;
+                        return await reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
                     }
 
                     this.videoService.createVideo(title, description).then(async (video) => {
-                        await reply(video);
+                        await reply(new ResponseDto<Video>(true, video));
                     });
                 } catch (error) {
-                    await reply({ error: 'Internal Server Error' });
+                    await reply(new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
                 }
             }
         );
