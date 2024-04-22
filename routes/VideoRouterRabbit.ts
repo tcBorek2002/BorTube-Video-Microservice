@@ -1,10 +1,14 @@
-import { Connection } from 'rabbitmq-client';
+import { Connection, Envelope } from 'rabbitmq-client';
 import { IVideoService } from '../services/IVideoService';
 import { ErrorDto } from '../dtos/ErrorDto';
 import { NotFoundError } from '../errors/NotFoundError';
 import { Video } from '@prisma/client';
 import { ResponseDto } from '../dtos/ResponseDto';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
+
+async function rabbitReply(reply: (body: any, envelope?: Envelope | undefined) => Promise<void>, response: ResponseDto<any>): Promise<void> {
+    await reply(response);
+}
 
 export class VideoRouterRabbit {
     private rabbit: Connection;
@@ -23,7 +27,7 @@ export class VideoRouterRabbit {
             async (req, reply) => {
                 console.log('Get all videos request:', req.body);
                 const videos = await this.videoService.getAllVideos();
-                reply(new ResponseDto<Video[]>(true, videos));
+                rabbitReply(reply, new ResponseDto<Video[]>(true, videos));
             }
         );
 
@@ -34,7 +38,7 @@ export class VideoRouterRabbit {
             async (req, reply) => {
                 console.log('Get all visible videos request:', req.body);
                 const videos = await this.videoService.getAllVisibleVideos();
-                reply(new ResponseDto<Video[]>(true, videos));
+                rabbitReply(reply, new ResponseDto<Video[]>(true, videos));
             }
         );
 
@@ -46,15 +50,15 @@ export class VideoRouterRabbit {
                 console.log('Get video by id:', req.body.id);
                 let videoId = parseInt(req.body.id);
                 if (isNaN(videoId)) {
-                    reply(new ResponseDto(false, new ErrorDto(400, 'InputError', 'Invalid video ID. Must be a number.')));
+                    rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InputError', 'Invalid video ID. Must be a number.')));
                     return;
                 }
                 try {
                     const video = await this.videoService.getVideoById(videoId);
-                    reply(new ResponseDto<Video>(true, video));
+                    rabbitReply(reply, new ResponseDto<Video>(true, video));
                 } catch (error) {
                     if (error instanceof NotFoundError) {
-                        reply(new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
+                        rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
                     }
                 }
             }
@@ -69,7 +73,7 @@ export class VideoRouterRabbit {
 
                 try {
                     if (req.body == null) {
-                        return await reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
                     }
                     // const videoFile = req.file;
 
@@ -79,14 +83,14 @@ export class VideoRouterRabbit {
                     // }
                     const { title, description } = req.body;
                     if (!title || !description) {
-                        return await reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
                     }
 
                     this.videoService.createVideo(title, description).then(async (video) => {
-                        await reply(new ResponseDto<Video>(true, video));
+                        return await rabbitReply(reply, new ResponseDto<Video>(true, video));
                     });
                 } catch (error) {
-                    await reply(new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
                 }
             }
         );
@@ -101,23 +105,23 @@ export class VideoRouterRabbit {
 
                 // Check if the video ID is a valid number
                 if (isNaN(videoId)) {
-                    return reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
                 }
                 const { title, description, videoState } = req.body;
 
                 // Update the video in the database
-                this.videoService.updateVideo({ id: videoId, title: title, description: description, videoState: videoState }).then((updatedVideo) => {
-                    if (updatedVideo != null) { reply(new ResponseDto<Video>(true, updatedVideo)) }
+                this.videoService.updateVideo({ id: videoId, title: title, description: description, videoState: videoState }).then(async (updatedVideo) => {
+                    if (updatedVideo != null) { return await rabbitReply(reply, new ResponseDto<Video>(true, updatedVideo)) }
                     else {
-                        reply(new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found')));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
                     }
                 }).catch(async (error) => {
                     if (error instanceof PrismaClientValidationError) {
                         console.error('Error updating video:', error);
-                        return reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid input.')));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid input.')));
                     }
                     else {
-                        return reply(new ResponseDto(false, new ErrorDto(500, 'InternalError', error.message)));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
                     }
                 });
             }
@@ -133,17 +137,17 @@ export class VideoRouterRabbit {
 
                 // Check if the video ID is a valid number
                 if (isNaN(videoId)) {
-                    return reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
                 }
 
                 this.videoService.deleteVideoByID(videoId).then(async (deleted) => {
-                    await reply(new ResponseDto<Video>(true, deleted));
+                    return await rabbitReply(reply, new ResponseDto<Video>(true, deleted));
                 }).catch(async (error) => {
                     if (error instanceof NotFoundError) {
-                        await reply(new ResponseDto(false, new ErrorDto(404, 'NotFoundError', error.message)));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', error.message)));
                     }
                     else {
-                        await reply(new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
                     }
                 });
             }
