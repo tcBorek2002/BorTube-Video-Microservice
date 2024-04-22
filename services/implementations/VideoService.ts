@@ -22,19 +22,15 @@ export class VideoService implements IVideoService {
     }
 
     async deleteVideoByID(id: number) {
-        try {
-            let video = await this.videoRepository.findVideoByID(id);
-            if (video?.videoFileId) {
-                await deleteVideoFileById(video?.videoFileId);
-            }
-            let deleted = await this.videoRepository.deleteVideoByID(id);
-            if (deleted) return true;
-            return false;
+        let video = await this.videoRepository.findVideoByID(id);
+        if (video == null) throw new NotFoundError(404, "Video not found");
+        if (video?.videoFileId) {
+            await deleteVideoFileById(video?.videoFileId);
         }
-        catch (error) {
-            return false;
-        }
+        let deleted = await this.videoRepository.deleteVideoByID(id);
+        return deleted;
     }
+
 
     async createVideo(title: string, description: string) {
         return await this.videoRepository.createVideo(title, description, VideoState.UPLOADING);

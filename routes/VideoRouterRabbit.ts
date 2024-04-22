@@ -110,16 +110,17 @@ export class VideoRouterRabbit {
 
                 // Check if the video ID is a valid number
                 if (isNaN(videoId)) {
-                    reply({ error: 'Invalid video ID. Must be a number.' });
-                    return;
+                    return reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
                 }
 
                 this.videoService.deleteVideoByID(videoId).then(async (deleted) => {
-                    if (deleted) {
-                        await reply(deleted);
+                    await reply(new ResponseDto<Video>(true, deleted));
+                }).catch(async (error) => {
+                    if (error instanceof NotFoundError) {
+                        await reply(new ResponseDto(false, new ErrorDto(404, 'NotFoundError', error.message)));
                     }
                     else {
-                        await reply({ error: "Video not found." });
+                        await reply(new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
                     }
                 });
             }
