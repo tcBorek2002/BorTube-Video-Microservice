@@ -4,6 +4,7 @@ import { ErrorDto } from '../dtos/ErrorDto';
 import { NotFoundError } from '../errors/NotFoundError';
 import { Video } from '@prisma/client';
 import { ResponseDto } from '../dtos/ResponseDto';
+import { PrismaClientValidationError } from '@prisma/client/runtime/library';
 
 export class VideoRouterRabbit {
     private rabbit: Connection;
@@ -96,7 +97,29 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Update video request:', req.body);
-                await reply('Video updated');
+                const videoId = Number(req.body.id);
+
+                // Check if the video ID is a valid number
+                if (isNaN(videoId)) {
+                    return reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
+                }
+                const { title, description, videoState } = req.body;
+
+                // Update the video in the database
+                this.videoService.updateVideo({ id: videoId, title: title, description: description, videoState: videoState }).then((updatedVideo) => {
+                    if (updatedVideo != null) { reply(new ResponseDto<Video>(true, updatedVideo)) }
+                    else {
+                        reply(new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found')));
+                    }
+                }).catch(async (error) => {
+                    if (error instanceof PrismaClientValidationError) {
+                        console.error('Error updating video:', error);
+                        return reply(new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid input.')));
+                    }
+                    else {
+                        return reply(new ResponseDto(false, new ErrorDto(500, 'InternalError', error.message)));
+                    }
+                });
             }
         );
 
