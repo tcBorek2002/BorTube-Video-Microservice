@@ -3,9 +3,10 @@ import { IVideoRepository } from "../../repositories/IVideoRepository";
 import { IVideoService } from "../IVideoService";
 import { deleteVideoFileById } from "../videoFileService";
 import { NotFoundError } from "../../errors/NotFoundError";
+import { IUploadService } from "../IUploadService";
 
 export class VideoService implements IVideoService {
-    constructor(private videoRepository: IVideoRepository) { }
+    constructor(private videoRepository: IVideoRepository, private azureUploadService: IUploadService) { }
 
     async getAllVideos() {
         return await this.videoRepository.findAllVideos();
@@ -32,8 +33,12 @@ export class VideoService implements IVideoService {
     }
 
 
-    async createVideo(title: string, description: string) {
-        return await this.videoRepository.createVideo(title, description, VideoState.UPLOADING);
+    async createVideo(title: string, description: string, fileName: string) {
+        const createdVideo = await this.videoRepository.createVideo(title, description, VideoState.UPLOADING);
+        const videoId = createdVideo.id;
+        const blobName = videoId + "_" + fileName;
+        const sasUrl = await this.azureUploadService.getSasUrl(blobName);
+        return { video: createdVideo, sasUrl: sasUrl }
     }
 
     async updateVideo({ id, title, description, videoState }: { id: number; title?: string; description?: string; videoState?: VideoState }) {

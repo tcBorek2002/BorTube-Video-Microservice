@@ -10,4 +10,8 @@ export class ResponseDto<T> {
         this.success = success;
         this.data = data;
     }
+
+    static isResponseDto<T>(object: any): object is ResponseDto<T> {
+        return 'success' in object && 'data' in object;
+    }
 }

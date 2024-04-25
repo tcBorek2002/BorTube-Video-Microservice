@@ -73,7 +73,7 @@ export class VideoRouterRabbit {
 
                 try {
                     if (req.body == null) {
-                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description and fileName are required.')));
                     }
                     // const videoFile = req.file;
 
@@ -81,14 +81,15 @@ export class VideoRouterRabbit {
                     //     res.status(400).send("No file was sent or misformed file was sent.");
                     //     return;
                     // }
-                    const { title, description } = req.body;
-                    if (!title || !description) {
-                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title and description are required.')));
+                    const { title, description, fileName } = req.body;
+                    if (!title || !description || !fileName) {
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description and fileName are required.')));
                     }
 
-                    this.videoService.createVideo(title, description).then(async (video) => {
-                        return await rabbitReply(reply, new ResponseDto<Video>(true, video));
+                    this.videoService.createVideo(title, description, fileName).then(async (createdObject) => {
+                        return await rabbitReply(reply, new ResponseDto<{ video: Video, sasUrl: string }>(true, createdObject));
                     });
+
                 } catch (error) {
                     return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
                 }

@@ -7,6 +7,7 @@ import { Storage } from '@google-cloud/storage';
 import prisma from '../client';
 import { VideoService } from './implementations/VideoService';
 import { PrismaVideoRepository } from '../repositories/implementations/PrismaVideoRepository';
+import { AzureUploadService } from './implementations/AzureUploadService';
 
 
 const azureStorageConnectionString = process.env.AZURESTORAGECONNECTIONSTRING;
@@ -69,29 +70,29 @@ export async function deleteVideoCloud(videoUrl: string) {
     }
 }
 
-export async function uploadVideo(videoFile: Express.Multer.File, videoId: number) {
-    let videoService = new VideoService(new PrismaVideoRepository());
-    if (azureStorageConnectionString == undefined) {
-        return false;
-    }
-    const blobName = videoId + "_" + videoFile.originalname;
-    const videoUrl = "https://storagebortube.blob.core.windows.net/bortube-container/" + blobName;
+// export async function uploadVideo(videoFile: Express.Multer.File, videoId: number) {
+//     let videoService = new VideoService(new PrismaVideoRepository(), new AzureUploadService());
+//     if (azureStorageConnectionString == undefined) {
+//         return false;
+//     }
+//     const blobName = videoId + "_" + videoFile.originalname;
+//     const videoUrl = "https://storagebortube.blob.core.windows.net/bortube-container/" + blobName;
 
-    const blobServiceClient = BlobServiceClient.fromConnectionString(azureStorageConnectionString);
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-    try {
-        const stream = Readable.from(videoFile.buffer);
-        const durationSeconds = await getVideoDurationInSeconds(stream);
-        await blockBlobClient.upload(videoFile.buffer, videoFile.size);
-        await createVideoFile(durationSeconds, videoUrl, videoId);
-        await videoService.updateVideo({ id: videoId, videoState: VideoState.VISIBLE });
-        return true;
-    } catch (error) {
-        console.error("Error uploading video:", error);
-        return false;
-    }
-}
+//     const blobServiceClient = BlobServiceClient.fromConnectionString(azureStorageConnectionString);
+//     const containerClient = blobServiceClient.getContainerClient(containerName);
+//     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+//     try {
+//         const stream = Readable.from(videoFile.buffer);
+//         const durationSeconds = await getVideoDurationInSeconds(stream);
+//         await blockBlobClient.upload(videoFile.buffer, videoFile.size);
+//         await createVideoFile(durationSeconds, videoUrl, videoId);
+//         await videoService.updateVideo({ id: videoId, videoState: VideoState.VISIBLE });
+//         return true;
+//     } catch (error) {
+//         console.error("Error uploading video:", error);
+//         return false;
+//     }
+// }
 
 export async function uploadVideoGoogleCloud(videoFile: Express.Multer.File, videoId: number) {
     if (azureStorageConnectionString == undefined) {
