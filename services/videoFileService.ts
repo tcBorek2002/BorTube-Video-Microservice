@@ -7,7 +7,6 @@ import { Storage } from '@google-cloud/storage';
 import prisma from '../client';
 import { VideoService } from './implementations/VideoService';
 import { PrismaVideoRepository } from '../repositories/implementations/PrismaVideoRepository';
-import { AzureUploadService } from './implementations/AzureUploadService';
 
 
 const azureStorageConnectionString = process.env.AZURESTORAGECONNECTIONSTRING;

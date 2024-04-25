@@ -2,9 +2,10 @@ import { Connection, Envelope } from 'rabbitmq-client';
 import { IVideoService } from '../services/IVideoService';
 import { ErrorDto } from '../dtos/ErrorDto';
 import { NotFoundError } from '../errors/NotFoundError';
-import { Video } from '@prisma/client';
+import { Video, VideoState } from '@prisma/client';
 import { ResponseDto } from '../dtos/ResponseDto';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
+import { IVideoFileService } from '../services/IVideoFileService';
 
 async function rabbitReply(reply: (body: any, envelope?: Envelope | undefined) => Promise<void>, response: ResponseDto<any>): Promise<void> {
     await reply(response);
@@ -13,10 +14,12 @@ async function rabbitReply(reply: (body: any, envelope?: Envelope | undefined) =
 export class VideoRouterRabbit {
     private rabbit: Connection;
     private videoService: IVideoService;
+    private videoFileService: IVideoFileService;
 
-    constructor(rabbit: Connection, videoService: IVideoService) {
+    constructor(rabbit: Connection, videoService: IVideoService, videoFileService: IVideoFileService) {
         this.rabbit = rabbit;
         this.videoService = videoService;
+        this.videoFileService = videoFileService;
     }
 
     public start(): void {
@@ -140,6 +143,19 @@ export class VideoRouterRabbit {
                 if (isNaN(videoId)) {
                     return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
                 }
+
+                let video = await this.videoService.getVideoById(videoId).catch((error) => {
+                    return new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.'));
+                });
+                if (video == null) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
+                }
+
+                const videoObj = video as { id: number; title: string; description: string; videoState: VideoState; videoFileId: number | null; };
+
+                await this.videoFileService.deleteVideoFileById(videoObj.id).catch((error) => {
+                    return new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error. ' + error.message));
+                });
 
                 this.videoService.deleteVideoByID(videoId).then(async (deleted) => {
                     return await rabbitReply(reply, new ResponseDto<Video>(true, deleted));
