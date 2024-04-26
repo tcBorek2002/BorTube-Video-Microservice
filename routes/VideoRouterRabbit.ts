@@ -6,6 +6,7 @@ import { Video, VideoState } from '@prisma/client';
 import { ResponseDto } from '../dtos/ResponseDto';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { IVideoFileService } from '../services/IVideoFileService';
+import { InternalServerError } from '../errors/InternalServerError';
 
 async function rabbitReply(reply: (body: any, envelope?: Envelope | undefined) => Promise<void>, response: ResponseDto<any>): Promise<void> {
     await reply(response);
@@ -74,28 +75,26 @@ export class VideoRouterRabbit {
             async (req, reply) => {
                 console.log('Create video request:', req.body);
 
-                try {
-                    if (req.body == null) {
-                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description and fileName are required.')));
-                    }
-                    // const videoFile = req.file;
-
-                    // if (videoFile == undefined) {
-                    //     res.status(400).send("No file was sent or misformed file was sent.");
-                    //     return;
-                    // }
-                    const { title, description, fileName } = req.body;
-                    if (!title || !description || !fileName) {
-                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description and fileName are required.')));
-                    }
-
-                    this.videoService.createVideo(title, description, fileName).then(async (createdObject) => {
-                        return await rabbitReply(reply, new ResponseDto<{ video: Video, sasUrl: string }>(true, createdObject));
-                    });
-
-                } catch (error) {
-                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
+                if (req.body == null) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description, fileName and duration are required.')));
                 }
+
+                const { title, description, fileName, duration } = req.body;
+                if (!title || !description || !fileName || !duration || isNaN(duration)) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description, fileName and duration are required.')));
+                }
+
+                let createdObject = await this.videoService.createVideo(title, description, fileName).catch(async (error) => {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error. ' + error.message)));
+                });
+
+                if (createdObject == null) return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error.')));
+
+                const blobName = createdObject.video.id + "_" + fileName;
+                await this.videoFileService.createVideoFile(blobName, duration, (createdObject as { video: Video; sasUrl: string; }).video.id).catch(async (error) => {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error. ' + error.message)));
+                });
+                await rabbitReply(reply, new ResponseDto<{ video: Video, sasUrl: string }>(true, createdObject));
             }
         );
 

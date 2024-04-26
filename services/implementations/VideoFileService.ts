@@ -15,7 +15,30 @@ export class VideoFileService implements IVideoFileService {
     constructor(connection: Connection) {
         this.rabbit = connection;
     }
-    async deleteVideoFileById(videoFileId: number): Promise<{ id: number; duration: number; videoUrl: string; }> {
+    async createVideoFile(blobName: string, duration: number, videoId: number): Promise<{ id: number; duration: number; videoUrl: string | null; }> {
+        console.log('Creating video file.,..');
+        const rpcClient = this.rabbit.createRPCClient({ confirm: true })
+
+        const body = { blobName, duration, videoId };
+
+        const res = await rpcClient.send('create-video-file', body);
+        await rpcClient.close()
+
+        if (!res || !res.body || res.contentType !== 'application/json' || !ResponseDto.isResponseDto(res.body)) {
+            throw new InternalServerError(500, 'Invalid response create-video-file: ' + res.body);
+        }
+
+        const response = res.body;
+        if (response.success === false) {
+            let error: ErrorDto = response.data as ErrorDto;
+            throw new InternalServerError(500, error.message);
+        }
+        else {
+            let videoFile = response.data as VideoFile;
+            return videoFile;
+        }
+    }
+    async deleteVideoFileById(videoFileId: number): Promise<VideoFile> {
         const rpcClient = this.rabbit.createRPCClient({ confirm: true })
 
         const body = { videoFileId: videoFileId };

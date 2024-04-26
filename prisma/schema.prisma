@@ -12,14 +12,14 @@ model Video {
   title       String     @db.VarChar(100)
   description String
   videoState  VideoState
-  videoFile   VideoFile? @relation(fields: [videoFileId], references: [id])
   videoFileId Int?       @unique
+  videoFile   VideoFile? @relation(fields: [videoFileId], references: [id])
 }
 
 model VideoFile {
-  id       Int    @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   duration Int
-  videoUrl String
+  videoUrl String?
   video    Video?
 }
 
