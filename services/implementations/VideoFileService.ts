@@ -1,7 +1,6 @@
 import { VideoFile, VideoState } from "@prisma/client";
 import { IVideoRepository } from "../../repositories/IVideoRepository";
 import { IVideoService } from "../IVideoService";
-import { deleteVideoFileById } from "../videoFileService";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { IVideoFileService } from "../IVideoFileService";
 import Connection from "rabbitmq-client";
@@ -15,7 +14,7 @@ export class VideoFileService implements IVideoFileService {
     constructor(connection: Connection) {
         this.rabbit = connection;
     }
-    async createVideoFile(blobName: string, duration: number, videoId: number): Promise<{ id: number; duration: number; videoUrl: string | null; }> {
+    async createVideoFile(blobName: string, duration: number, videoId: string): Promise<VideoFile> {
         console.log('Creating video file.,..');
         const rpcClient = this.rabbit.createRPCClient({ confirm: true })
 
@@ -38,7 +37,7 @@ export class VideoFileService implements IVideoFileService {
             return videoFile;
         }
     }
-    async deleteVideoFileById(videoFileId: number): Promise<VideoFile> {
+    async deleteVideoFileById(videoFileId: string): Promise<VideoFile> {
         const rpcClient = this.rabbit.createRPCClient({ confirm: true })
 
         const body = { videoFileId: videoFileId };

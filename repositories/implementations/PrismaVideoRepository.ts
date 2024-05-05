@@ -10,10 +10,10 @@ export class PrismaVideoRepository implements IVideoRepository {
     async findAllVisibleVideos(): Promise<Video[]> {
         return await prisma.video.findMany({ where: { videoState: VideoState.VISIBLE }, include: { videoFile: true } });
     }
-    async findVideoByID(id: number): Promise<Video | null> {
+    async findVideoByID(id: string): Promise<Video | null> {
         return await prisma.video.findUnique({ where: { id }, include: { videoFile: true } });
     }
-    async deleteVideoByID(id: number): Promise<Video> {
+    async deleteVideoByID(id: string): Promise<Video> {
         return await prisma.video.delete({ where: { id } });
     }
     async createVideo(title: string, description: string, videoState: VideoState): Promise<Video> {
@@ -25,7 +25,7 @@ export class PrismaVideoRepository implements IVideoRepository {
             }
         })
     }
-    async updateVideo(id: number, title?: string, description?: string, videoState?: VideoState): Promise<Video> {
+    async updateVideo(id: string, title?: string, description?: string, videoState?: VideoState): Promise<Video> {
         return await prisma.video.update({ where: { id }, data: { title, description, videoState } });
     }
 

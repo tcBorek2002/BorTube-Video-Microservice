@@ -52,11 +52,11 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Get video by id:', req.body.id);
-                let videoId = parseInt(req.body.id);
-                if (isNaN(videoId)) {
-                    rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InputError', 'Invalid video ID. Must be a number.')));
-                    return;
+                let videoId = req.body.id;
+                if (videoId == null) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Video ID is required.')));
                 }
+
                 try {
                     const video = await this.videoService.getVideoById(videoId);
                     rabbitReply(reply, new ResponseDto<Video>(true, video));
@@ -104,11 +104,11 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Update video request:', req.body);
-                const videoId = Number(req.body.id);
+                const videoId = req.body.id;
 
                 // Check if the video ID is a valid number
-                if (isNaN(videoId)) {
-                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
+                if (videoId == null) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Video ID is required.')));
                 }
                 const { title, description, videoState } = req.body;
 
@@ -136,11 +136,11 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Delete video request:', req.body);
-                const videoId = parseInt(req.body.id);
+                const videoId = req.body.id;
 
                 // Check if the video ID is a valid number
-                if (isNaN(videoId)) {
-                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Invalid video ID. Must be a number.')));
+                if (videoId == null) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Video ID is required.')));
                 }
 
                 let video = await this.videoService.getVideoById(videoId).catch((error) => {
@@ -150,7 +150,7 @@ export class VideoRouterRabbit {
                     return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
                 }
 
-                const videoObj = video as { id: number; title: string; description: string; videoState: VideoState; videoFileId: number | null; };
+                const videoObj = video as { id: string; title: string; description: string; videoState: VideoState; videoFileId: number | null; };
 
                 await this.videoFileService.deleteVideoFileById(videoObj.id).catch((error) => {
                     return new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error. ' + error.message));

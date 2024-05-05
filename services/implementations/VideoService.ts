@@ -1,7 +1,6 @@
 import { VideoState } from "@prisma/client";
 import { IVideoRepository } from "../../repositories/IVideoRepository";
 import { IVideoService } from "../IVideoService";
-import { deleteVideoFileById } from "../videoFileService";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { IVideoFileService } from "../IVideoFileService";
 
@@ -16,17 +15,17 @@ export class VideoService implements IVideoService {
         return await this.videoRepository.findAllVisibleVideos();
     }
 
-    async getVideoById(id: number) {
+    async getVideoById(id: string) {
         let video = await this.videoRepository.findVideoByID(id);
         if (video == null) throw new NotFoundError(404, "Video not found");
         return video;
     }
 
-    async deleteVideoByID(id: number) {
+    async deleteVideoByID(id: string) {
         let video = await this.videoRepository.findVideoByID(id);
         if (video == null) throw new NotFoundError(404, "Video not found");
         if (video?.videoFileId) {
-            await deleteVideoFileById(video?.videoFileId);
+            this.videoFileService.deleteVideoFileById(video?.videoFileId);
         }
         let deleted = await this.videoRepository.deleteVideoByID(id);
         return deleted;
@@ -41,7 +40,7 @@ export class VideoService implements IVideoService {
         return { video: createdVideo, sasUrl: sasUrl }
     }
 
-    async updateVideo({ id, title, description, videoState }: { id: number; title?: string; description?: string; videoState?: VideoState }) {
+    async updateVideo({ id, title, description, videoState }: { id: string; title?: string; description?: string; videoState?: VideoState }) {
         return await this.videoRepository.updateVideo(id, title, description, videoState);
     }
 }
