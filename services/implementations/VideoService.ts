@@ -37,7 +37,6 @@ export class VideoService implements IVideoService {
         const createdVideo = await this.videoRepository.createVideo(title, description, VideoState.UPLOADING);
         const videoId = createdVideo.id;
         const blobName = videoId + "_" + fileName;
-        console.log('bkobName:', blobName);
         const sasUrl = await this.videoFileService.getSasUrl(blobName);
         return { video: createdVideo, sasUrl: sasUrl }
     }
