@@ -14,8 +14,6 @@ model Video {
   videoState  VideoState
   videoFileId String?    @unique
   videoFile   VideoFile? @relation(fields: [videoFileId], references: [id])
-  User        User?      @relation(fields: [userId], references: [id])
-  userId      String?
 }
 
 model VideoFile {
@@ -26,11 +24,10 @@ model VideoFile {
 }
 
 model User {
-  id          String  @id @default(uuid())
-  email       String  @unique
+  id          String @id @default(uuid())
+  email       String @unique
   password    String
-  displayName String?
-  Video       Video[]
+  displayName String
 }
 
 enum VideoState {
