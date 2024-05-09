@@ -9,6 +9,7 @@ datasource db {
 
 model Video {
   id          String     @id @default(uuid())
+  userId      String
   title       String     @db.VarChar(100)
   description String
   videoState  VideoState
@@ -21,13 +22,6 @@ model VideoFile {
   duration Int
   videoUrl String?
   video    Video?
-}
-
-model User {
-  id          String @id @default(uuid())
-  email       String @unique
-  password    String
-  displayName String
 }
 
 enum VideoState {

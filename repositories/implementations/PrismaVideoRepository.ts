@@ -16,9 +16,10 @@ export class PrismaVideoRepository implements IVideoRepository {
     async deleteVideoByID(id: string): Promise<Video> {
         return await prisma.video.delete({ where: { id } });
     }
-    async createVideo(title: string, description: string, videoState: VideoState): Promise<Video> {
+    async createVideo(userId: string, title: string, description: string, videoState: VideoState): Promise<Video> {
         return await prisma.video.create({
             data: {
+                userId,
                 title,
                 description,
                 videoState,

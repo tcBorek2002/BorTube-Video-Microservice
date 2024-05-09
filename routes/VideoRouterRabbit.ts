@@ -7,6 +7,8 @@ import { ResponseDto } from '../dtos/ResponseDto';
 import { PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { IVideoFileService } from '../services/IVideoFileService';
 import { InternalServerError } from '../errors/InternalServerError';
+import { VideoDto } from '../dtos/VideoDto';
+import { InvalidInputError } from '../errors/InvalidInputError';
 
 async function rabbitReply(reply: (body: any, envelope?: Envelope | undefined) => Promise<void>, response: ResponseDto<any>): Promise<void> {
     await reply(response);
@@ -30,8 +32,15 @@ export class VideoRouterRabbit {
             },
             async (req, reply) => {
                 console.log('Get all videos request:', req.body);
-                const videos = await this.videoService.getAllVideos();
-                rabbitReply(reply, new ResponseDto<Video[]>(true, videos));
+                await this.videoService.getAllVideos().then((videos) => {
+                    return rabbitReply(reply, new ResponseDto<VideoDto[]>(true, videos));
+
+                }).catch(async (error) => {
+                    if (error instanceof InvalidInputError) {
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', error.message)));
+                    }
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error. ' + error.message)));
+                });
             }
         );
 
@@ -42,7 +51,7 @@ export class VideoRouterRabbit {
             async (req, reply) => {
                 console.log('Get all visible videos request:', req.body);
                 const videos = await this.videoService.getAllVisibleVideos();
-                rabbitReply(reply, new ResponseDto<Video[]>(true, videos));
+                rabbitReply(reply, new ResponseDto<VideoDto[]>(true, videos));
             }
         );
 
@@ -59,7 +68,7 @@ export class VideoRouterRabbit {
 
                 try {
                     const video = await this.videoService.getVideoById(videoId);
-                    rabbitReply(reply, new ResponseDto<Video>(true, video));
+                    rabbitReply(reply, new ResponseDto<VideoDto>(true, video));
                 } catch (error) {
                     if (error instanceof NotFoundError) {
                         rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', 'Video not found.')));
@@ -79,12 +88,12 @@ export class VideoRouterRabbit {
                     return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description, fileName and duration are required.')));
                 }
 
-                const { title, description, fileName, duration } = req.body;
+                const { userId, title, description, fileName, duration } = req.body;
                 if (!title || !description || !fileName || !duration || isNaN(duration)) {
                     return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'Title, description, fileName and duration are required.')));
                 }
 
-                let createdObject = await this.videoService.createVideo(title, description, fileName).catch(async (error) => {
+                let createdObject = await this.videoService.createVideo(userId, title, description, fileName).catch(async (error) => {
                     return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error. ' + error.message)));
                 });
 
@@ -157,7 +166,7 @@ export class VideoRouterRabbit {
                 });
 
                 this.videoService.deleteVideoByID(videoId).then(async (deleted) => {
-                    return await rabbitReply(reply, new ResponseDto<Video>(true, deleted));
+                    return await rabbitReply(reply, new ResponseDto<VideoDto>(true, deleted));
                 }).catch(async (error) => {
                     if (error instanceof NotFoundError) {
                         return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', error.message)));

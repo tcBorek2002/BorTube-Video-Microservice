@@ -5,6 +5,6 @@ export interface IVideoRepository {
     findAllVisibleVideos(): Promise<Video[]>;
     findVideoByID(id: string): Promise<Video | null>;
     deleteVideoByID(id: string): Promise<Video>;
-    createVideo(title: string, description: string, videoState: VideoState): Promise<Video>;
+    createVideo(userId: string, title: string, description: string, videoState: VideoState): Promise<Video>;
     updateVideo(id: string, title?: string, description?: string, videoState?: VideoState): Promise<Video>;
 }
