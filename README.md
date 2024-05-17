@@ -6,8 +6,8 @@ sonar-scanner.bat -D"sonar.projectKey=Video-MicroService-Local" -D"sonar.sources
 npm run dev for development. Runs on localhost:8000
 
 Docker deploying:  
-docker build . -t video-microservice  
-docker run -p 8000:8000 --name bortube-video-microservice video-microservice
+docker build . -t bortube_video_microservice
+docker run --name bortube_video_microservice bortube_video_microservice
 
 Run db:
 docker-compose -f ./docker-compose-db.yml up -d
