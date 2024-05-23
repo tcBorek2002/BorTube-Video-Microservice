@@ -82,8 +82,8 @@ stages:
     dependsOn: Build
 
     jobs:
-      - deployment: Deployment
-        displayName: Deployment
+      - deployment: Deployment bortube
+        displayName: Deployment bortube
         pool:
           vmImage: $(vmImageName)
         environment: "tcBorek2002BorTubeVideoMicroservice.default"
