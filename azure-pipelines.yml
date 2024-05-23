@@ -77,13 +77,13 @@ stages:
               tags: |
                 $(tag)
 
-  - stage: Deploy
+  - stage: Deploy_stage
     displayName: Deploy stage
     dependsOn: Build
 
     jobs:
-      - deployment: Deployment_bortube
-        displayName: Deployment_bortube
+      - deployment: Deployment_job
+        displayName: Deployment job
         pool:
           vmImage: $(vmImageName)
         environment: "tcBorek2002BorTubeVideoMicroservice.default"
