@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\Users\Borek\Documents\Kompose\kompose.exe convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: bortube-video-microservice
+  name: bortube-video-microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: bortube-video-microservice
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\Users\Borek\Documents\Kompose\kompose.exe convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: bortube-video-microservice
+    spec:
+      imagePullSecrets:
+        # Local one first
+        # - name: bortube-pull-secret
+        - name: bortubecontainers8edb-auth
+      containers:
+        - image: bortubecontainers.azurecr.io/bortube/video-microservice:latest
+          name: bortube-video-microservice-container
+          resources: {}
+      restartPolicy: Always
+status: {}
