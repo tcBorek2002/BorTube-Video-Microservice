@@ -21,8 +21,8 @@ stages:
   - stage: Test
     displayName: Test code
     jobs:
-      - job: Test_and_SonarQube
-        displayName: Test code and run SonarQube analysis
+      - job: Run_tests
+        displayName: Run tests
         steps:
           - script: npm install
             displayName: "Install packages"
@@ -33,13 +33,20 @@ stages:
               targetPath: $(System.DefaultWorkingDirectory)/coverage
               artifact: "coverage"
               publishLocation: "pipeline"
-          # - task: DownloadPipelineArtifact@2
-          #   inputs:
-          #     buildType: 'specific'
-          #     project: '$(System.TeamProjectId)'
-          #     definition: '1'
-          #     artifactName: 'coverage'
-          #     targetPath: '$(System.DefaultWorkingDirectory)/coverage'
+
+  - stage: Verify
+    displayName: Verify code
+    jobs:
+      - job: Run_SonarQube_Analysis
+        displayName: Run SonarQube analysis
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: "specific"
+              project: "$(System.TeamProjectId)"
+              definition: "1"
+              artifactName: "coverage"
+              targetPath: "$(System.DefaultWorkingDirectory)/coverage"
           - task: SonarQubePrepare@5
             inputs:
               SonarQube: "SonarQube-Eindhoven"
@@ -55,10 +62,6 @@ stages:
           - task: SonarQubePublish@5
             inputs:
               pollingTimeoutSec: "300"
-
-  # - stage: Verify
-  #   displayName: Verify code
-  #   jobs:
 
   - stage: Build
     displayName: Build stage
