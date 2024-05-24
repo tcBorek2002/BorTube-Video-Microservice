@@ -42,7 +42,7 @@ stages:
         steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              buildType: "latest"
+              buildType: "current"
               project: "$(System.TeamProjectId)"
               artifactName: "coverage"
               targetPath: $(System.DefaultWorkingDirectory)/coverage
