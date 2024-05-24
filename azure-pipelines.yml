@@ -103,6 +103,7 @@ stages:
                 $(imagePullSecret)
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
+              kubernetesServiceConnection: $(kubernetesServiceConnection)
 
   # - stage: Deploy_stage
   #   displayName: Deploy stage
