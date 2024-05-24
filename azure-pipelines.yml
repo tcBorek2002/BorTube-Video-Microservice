@@ -103,35 +103,3 @@ stages:
               containers: |
                 $(containerRegistry)/$(imageRepository):$(tag)
               kubernetesServiceConnection: $(kubernetesServiceConnection)
-
-  # - stage: Deploy_stage
-  #   displayName: Deploy stage
-  #   dependsOn: Build
-
-  #   jobs:
-  #     - deployment: Deployment_job
-  #       displayName: Deployment job
-  #       pool:
-  #         vmImage: $(vmImageName)
-  #       environment: "tcBorek2002BorTubeVideoMicroservice.default"
-  #       strategy:
-  #         runOnce:
-  #           deploy:
-  #             steps:
-  #               - task: KubernetesManifest@0
-  #                 displayName: Create imagePullSecret
-  #                 inputs:
-  #                   action: createSecret
-  #                   secretName: $(imagePullSecret)
-  #                   dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
-
-  #               - task: KubernetesManifest@0
-  #                 displayName: Deploy to Kubernetes cluster
-  #                 inputs:
-  #                   action: deploy
-  #                   manifests: |
-  #                     $(Pipeline.Workspace)/bortube-video-microservice-deployment.yaml
-  #                   imagePullSecrets: |
-  #                     $(imagePullSecret)
-  #                   containers: |
-  #                     $(containerRegistry)/$(imageRepository):$(tag)
