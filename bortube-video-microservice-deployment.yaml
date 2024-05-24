@@ -31,5 +31,8 @@ spec:
         - image: bortubecontainers.azurecr.io/bortube/video-microservice:latest
           name: bortube-video-microservice-container
           resources: {}
+          envFrom:
+            - secretRef:
+                name: video-microservice-secret
       restartPolicy: Always
 status: {}
