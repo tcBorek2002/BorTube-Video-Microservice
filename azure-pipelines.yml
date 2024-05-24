@@ -28,11 +28,11 @@ stages:
             displayName: "Install packages"
           - script: npm test
             displayName: "Run Tests and Generate Coverage"
-          # - task: PublishPipelineArtifact@1
-          #   inputs:
-          #     targetPath: $(System.DefaultWorkingDirectory)/coverage
-          #     artifact: 'coverage'
-          #     publishLocation: 'pipeline'
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: $(System.DefaultWorkingDirectory)/coverage
+              artifact: "coverage"
+              publishLocation: "pipeline"
           # - task: DownloadPipelineArtifact@2
           #   inputs:
           #     buildType: 'specific'
