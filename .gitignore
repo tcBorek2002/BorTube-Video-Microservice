@@ -34,3 +34,6 @@ npm-debug.log
 .env
 assets/gcp-key.json
 .scannerwork/report-task.txt
+
+# Kubernets secret
+secret.yaml
