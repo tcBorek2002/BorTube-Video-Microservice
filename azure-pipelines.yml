@@ -97,8 +97,7 @@ stages:
             displayName: Deploy to Kubernetes cluster
             inputs:
               action: deploy
-              manifests: |
-                $(Pipeline.Workspace)/bortube-video-microservice-deployment.yaml
+              manifests: "bortube-video-microservice-deployment.yaml"
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
