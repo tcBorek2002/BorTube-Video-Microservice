@@ -46,7 +46,7 @@ stages:
               project: "$(System.TeamProjectId)"
               definition: "1"
               artifactName: "coverage"
-              targetPath: "$(System.DefaultWorkingDirectory)/coverage"
+              targetPath: $(System.DefaultWorkingDirectory)/coverage
           - task: SonarQubePrepare@5
             inputs:
               SonarQube: "SonarQube-Eindhoven"
