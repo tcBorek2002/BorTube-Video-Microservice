@@ -6,6 +6,7 @@ export interface IVideoService {
     getAllVisibleVideos(): Promise<VideoDto[]>;
     getVideoById(id: string): Promise<VideoDto>;
     deleteVideoByID(id: string): Promise<VideoDto>;
+    deleteVideosByUserId(userId: string): Promise<boolean>;
     createVideo(userId: string, title: string, description: string, fileName: string): Promise<{ video: Video, sasUrl: string }>;
     updateVideo({ id, title, description, videoState }: { id: string; title?: string; description?: string; videoState?: VideoState }): Promise<Video>;
 }

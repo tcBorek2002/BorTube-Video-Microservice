@@ -178,6 +178,32 @@ export class VideoRouterRabbit {
             }
         );
 
+        const deleteVideosByUserIdServer = this.rabbit.createConsumer(
+            {
+                queue: 'delete-videos-by-user-id',
+            },
+            async (req, reply) => {
+                console.log('Delete videos by userId request:', req.body);
+                const userId = req.body.id;
+
+                // Check if the video ID is a valid number
+                if (userId == null) {
+                    return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(400, 'InvalidInputError', 'User ID is required.')));
+                }
+
+                this.videoService.deleteVideosByUserId(userId).then(async (deleted) => {
+                    return await rabbitReply(reply, new ResponseDto<boolean>(true, deleted));
+                }).catch(async (error) => {
+                    if (error instanceof NotFoundError) {
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(404, 'NotFoundError', error.message)));
+                    }
+                    else {
+                        return await rabbitReply(reply, new ResponseDto(false, new ErrorDto(500, 'InternalError', 'Internal Server Error while deleting videos by userId.: ' + error.message)));
+                    }
+                });
+            }
+        );
+
         process.on('SIGINT', async () => {
             await Promise.all([
                 getAllVideosServer.close(),
@@ -186,6 +212,7 @@ export class VideoRouterRabbit {
                 createVideoServer.close(),
                 updateVideoServer.close(),
                 deleteVideoServer.close(),
+                deleteVideosByUserIdServer.close()
             ]);
             await this.rabbit.close();
         });

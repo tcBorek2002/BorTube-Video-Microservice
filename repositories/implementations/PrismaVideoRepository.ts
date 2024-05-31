@@ -13,6 +13,9 @@ export class PrismaVideoRepository implements IVideoRepository {
     async findVideoByID(id: string): Promise<Video | null> {
         return await prisma.video.findUnique({ where: { id }, include: { videoFile: true } });
     }
+    async findAllVideosByUserId(userId: string): Promise<Video[]> {
+        return await prisma.video.findMany({ where: { userId }, include: { videoFile: true } });
+    }
     async deleteVideoByID(id: string): Promise<Video> {
         return await prisma.video.delete({ where: { id } });
     }

@@ -54,6 +54,14 @@ export class VideoService implements IVideoService {
         return { ...deleted, user: user! } as VideoDto;
     }
 
+    async deleteVideosByUserId(userId: string): Promise<boolean> {
+        let videos = await this.videoRepository.findAllVideosByUserId(userId);
+        videos.forEach(async v => {
+            await this.deleteVideoByID(v.id);
+        });
+        return true;
+    }
+
 
     async createVideo(userId: string, title: string, description: string, fileName: string) {
         const createdVideo = await this.videoRepository.createVideo(userId, title, description, VideoState.UPLOADING);
