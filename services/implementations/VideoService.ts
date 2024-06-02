@@ -45,7 +45,7 @@ export class VideoService implements IVideoService {
     async deleteVideoByID(id: string) {
         let video = await this.videoRepository.findVideoByID(id);
         if (video == null) throw new NotFoundError(404, "Video not found");
-        let user = await this.userService.getUserById(video.userId);
+        let user = await this.userService.getUserById(video.userId).catch(e => { throw e });
 
         if (video?.videoFileId) {
             this.videoFileService.deleteVideoFileById(video?.videoFileId);
@@ -54,10 +54,20 @@ export class VideoService implements IVideoService {
         return { ...deleted, user: user! } as VideoDto;
     }
 
+    async deleteVideoBydIdBoolean(id: string): Promise<boolean> {
+        let video = await this.videoRepository.findVideoByID(id);
+        if (video == null) throw new NotFoundError(404, "Video not found");
+        if (video?.videoFileId) {
+            this.videoFileService.deleteVideoFileById(video?.videoFileId);
+        }
+        let deleted = await this.videoRepository.deleteVideoByID(id);
+        return true;
+    }
+
     async deleteVideosByUserId(userId: string): Promise<boolean> {
         let videos = await this.videoRepository.findAllVideosByUserId(userId);
         videos.forEach(async v => {
-            await this.deleteVideoByID(v.id);
+            await this.deleteVideoBydIdBoolean(v.id).catch(e => { throw e });
         });
         return true;
     }
