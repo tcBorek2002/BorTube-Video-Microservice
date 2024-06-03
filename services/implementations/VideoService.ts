@@ -5,9 +5,10 @@ import { NotFoundError } from "../../errors/NotFoundError";
 import { IVideoFileService } from "../IVideoFileService";
 import { IUserService } from "../IUserService";
 import { VideoDto } from "../../dtos/VideoDto";
+import { RedisClientType } from "redis";
 
 export class VideoService implements IVideoService {
-    constructor(private videoRepository: IVideoRepository, private videoFileService: IVideoFileService, private userService: IUserService) { }
+    constructor(private videoRepository: IVideoRepository, private videoFileService: IVideoFileService, private userService: IUserService, private redisClient: RedisClientType<any, any, any>) { }
 
     async getAllVideos() {
         let videos = await this.videoRepository.findAllVideos();
@@ -22,23 +23,42 @@ export class VideoService implements IVideoService {
     }
 
     async getAllVisibleVideos() {
-        let videos = await this.videoRepository.findAllVisibleVideos();
-        let userIds = videos.map(v => v.userId);
-        let users = await this.userService.getUsersByIds(userIds);
-        let videoDtos: VideoDto[] = videos.map(v => {
-            let user = users.find(u => u.id == v.userId);
-            if (user == null) return null;
-            return { ...v, user: user! };
-        }).filter(v => v !== null) as VideoDto[]; // remove null values and assert the result as VideoDto[];
-        return videoDtos;
+        let redisVideos = await this.redisClient.get("visible-videos");
+        if (redisVideos) {
+            let parsedVideos = JSON.parse(redisVideos) as VideoDto[];
+            console.log("Fetched visible videos from cache");
+            return parsedVideos;
+        }
+        else {
+            let videos = await this.videoRepository.findAllVisibleVideos();
+            let userIds = videos.map(v => v.userId);
+            let users = await this.userService.getUsersByIds(userIds);
+            let videoDtos: VideoDto[] = videos.map(v => {
+                let user = users.find(u => u.id == v.userId);
+                if (user == null) return null;
+                return { ...v, user: user! };
+            }).filter(v => v !== null) as VideoDto[]; // remove null values and assert the result as VideoDto[];
+            this.redisClient.set("visible-videos", JSON.stringify(videoDtos), { EX: 60 });
+            console.log("Cached the visible videos");
+            return videoDtos;
+        }
     }
 
     async getVideoById(id: string) {
+        let redisVideo = await this.redisClient.get("video:" + id);
+        if (redisVideo) {
+            let parsedVideo = JSON.parse(redisVideo) as VideoDto;
+            console.log("Fetched video from cache");
+            return parsedVideo;
+        }
+
         let video = await this.videoRepository.findVideoByID(id);
         if (video == null) throw new NotFoundError(404, "Video not found");
         let user = await this.userService.getUserById(video.userId);
         if (user == null) throw new NotFoundError(404, "User belonging to video not found");
         let videoDto: VideoDto = { ...video, user: user! };
+        this.redisClient.set("video:" + id, JSON.stringify(videoDto), { EX: 120 });
+        console.log("Cached the video");
         return videoDto;
     }
 
