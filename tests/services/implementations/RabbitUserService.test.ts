@@ -82,8 +82,6 @@ describe("RabbitUserService", () => {
             expect(rpcClientMock.send).toHaveBeenCalledWith("get-user-dto-by-id", { id: "1" });
             expect(rpcClientMock.close).toHaveBeenCalled();
         });
-
-        // Add more test cases for different scenarios
     });
 
     describe("getUsersByIds", () => {
