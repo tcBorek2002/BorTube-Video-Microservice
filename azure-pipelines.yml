@@ -16,6 +16,9 @@ variables:
 
   # Agent VM image name
   vmImageName: "ubuntu-latest"
+  
+  # Redis connection string
+  REDIS_CONNECTION_STRING: $(REDIS_CONNECTION_STRING)
 
 stages:
   - stage: Test
