@@ -50,11 +50,18 @@ describe("VideoService", () => {
         } as unknown as Connection;
 
         videoRepo = new PrismaVideoRepository();
-        videoFileService = new VideoFileService(connection);
+        videoFileService = {
+            getSasUrl: jest.fn().mockResolvedValue("MockedSasUrl"),
+            deleteVideoFileById: jest.fn(),
+        } as unknown as IVideoFileService;
         userService = new RabbitUserService(connection);
 
         videoService = new VideoService(videoRepo, videoFileService, userService, redisClient);
 
+    });
+
+    afterAll(() => {
+        redisClient.quit();
     });
 
     describe("getAllVisibleVideos", () => {
@@ -96,4 +103,23 @@ describe("VideoService", () => {
         });
     });
 
+    describe("createVideo", () => {
+        it("should create a video", async () => {
+            const video = await videoService.createVideo("56a325fb-fe58-4aba-9bf5-40230e92b91b", "title", "description", "filename");
+            expect(video).toBeDefined();
+            expect(video.video.title).toBe("title");
+            await videoService.deleteVideoByID(video.video.id);
+        });
+    });
+
+    describe("updateVideo", () => {
+        it("should update a video", async () => {
+            const video = await videoService.createVideo("56a325fb-fe58-4aba-9bf5-40230e92b91b", "title", "description", "filename");
+            const updatedVideo = await videoService.updateVideo({ id: video.video.id, title: "new title", description: "new description" });
+            expect(updatedVideo).toBeDefined();
+            expect(updatedVideo.title).toBe("new title");
+            expect(updatedVideo.description).toBe("new description");
+            await videoService.deleteVideoByID(video.video.id);
+        });
+    })
 });
