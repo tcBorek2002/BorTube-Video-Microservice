@@ -30,6 +30,7 @@ stages:
             displayName: "Run Tests and Generate Coverage"
             env:
               REDIS_CONNECTION_STRING: $(REDIS_CONNECTION_STRING)
+              DATABASE_URL: $(DATABASE_URL)
           - task: PublishPipelineArtifact@1
             inputs:
               targetPath: $(System.DefaultWorkingDirectory)/coverage
